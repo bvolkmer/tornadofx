@@ -498,12 +498,12 @@ fun <S> TableView<S>.onEditCommit(onCommit: TableColumn.CellEditEvent<S, Any>.(S
         }
     }
 
-    columns.forEach(::addEventHandlerForColumn)
+    for (it in columns) addEventHandlerForColumn(it)
 
     columns.addListener({ change: ListChangeListener.Change<out TableColumn<S, *>> ->
         while (change.next()) {
             if (change.wasAdded())
-                change.addedSubList.forEach(::addEventHandlerForColumn)
+                for (it in change.addedSubList) addEventHandlerForColumn(it)
         }
     })
 }
@@ -754,7 +754,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
 
                 // Fixed columns always keep their size
                 val fixedColumns = param.table.contentColumns.filter { it.resizeType is Fixed }
-                fixedColumns.forEach {
+                for (it in fixedColumns) {
                     val rt = it.resizeType as Fixed
                     it.prefWidth = rt.width
                     remainingWidth -= it.width
@@ -762,7 +762,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
 
                 // Preferred sized columns get their size and are adjusted for resize-delta that affected them
                 val prefColumns = param.table.contentColumns.filter { it.resizeType is Pref }
-                prefColumns.forEach {
+                for (it in prefColumns) {
                     val rt = it.resizeType as Pref
                     it.prefWidth = rt.width + rt.delta
                     remainingWidth -= it.width
@@ -771,7 +771,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                 // Content columns are resized to their content and adjusted for resize-delta that affected them
                 val contentColumns = param.table.contentColumns.filter { it.resizeType is Content }
                 param.table.resizeColumnsToFitContent(contentColumns)
-                contentColumns.forEach {
+                for (it in contentColumns) {
                     val rt = it.resizeType as Content
 
                     it.prefWidth = it.width + rt.delta + rt.padding
@@ -795,7 +795,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                 val pctColumns = param.table.contentColumns.filter { it.resizeType is Pct }
                 if (pctColumns.isNotEmpty()) {
                     val widthPerPct = contentWidth / 100.0
-                    pctColumns.forEach {
+                    for (it in pctColumns) {
                         val rt = it.resizeType as Pct
                         it.prefWidth = (widthPerPct * rt.value) + rt.delta
                         remainingWidth -= it.width
@@ -813,7 +813,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                     val totalWeight = consideredColumns.map { it.weight() }.sum()
                     val perWeight = remainingWidth / totalWeight
 
-                    consideredColumns.forEach {
+                    for (it in consideredColumns) {
                         val rt = it.resizeType
                         if (rt is Weight) {
                             if (rt.minContentWidth && !rt.minRecorded) {
@@ -832,7 +832,7 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
                     val remainingColumns = param.table.contentColumns.filter { it.resizeType is Remaining }
                     if (remainingColumns.isNotEmpty() && remainingWidth > 0) {
                         val perColumn = remainingWidth / remainingColumns.size.toDouble()
-                        remainingColumns.forEach {
+                        for (it in remainingColumns) {
                             it.prefWidth = perColumn + it.resizeType.delta
                             remainingWidth -= it.width
                         }
@@ -938,10 +938,10 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
 
         private val columnsChangeListener = ListChangeListener<TableColumn<*, *>> { s ->
             while (s.next()) {
-                if (s.wasAdded()) s.addedSubList.forEach {
+                if (s.wasAdded()) for (it in s.addedSubList) {
                     it.widthProperty().addListener(columnWidthChangeListener)
                 }
-                if (s.wasRemoved()) s.removed.forEach {
+                if (s.wasRemoved()) for (it in s.removed) {
                     it.widthProperty().removeListener(columnWidthChangeListener)
                 }
             }
@@ -968,14 +968,18 @@ class SmartResize private constructor() : Callback<TableView.ResizeFeatures<out 
         private fun install(table: TableView<*>) {
             table.columnResizePolicyProperty().addListener(policyChangeListener)
             table.columns.addListener(columnsChangeListener)
-            table.columns.forEach { it.widthProperty().addListener(columnWidthChangeListener) }
+            for (it in table.columns) {
+                it.widthProperty().addListener(columnWidthChangeListener)
+            }
             table.properties["tornadofx.smartResizeInstalled"] = true
         }
 
         private fun uninstall(table: TableView<*>) {
             table.columnResizePolicyProperty().removeListener(policyChangeListener)
             table.columns.removeListener(columnsChangeListener)
-            table.columns.forEach { it.widthProperty().removeListener(columnWidthChangeListener) }
+            for (it in table.columns) {
+                it.widthProperty().removeListener(columnWidthChangeListener)
+            }
             table.properties.remove("tornadofx.smartResizeInstalled")
         }
     }
@@ -1142,11 +1146,11 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
         }
 
         // Add columns and track changes to columns
-        tableView.columns.forEach(::addEventHandlerForColumn)
+        for (it in tableView.columns) addEventHandlerForColumn(it)
         tableView.columns.addListener({ change: ListChangeListener.Change<out TableColumn<S, *>> ->
             while (change.next()) {
                 if (change.wasAdded())
-                    change.addedSubList.forEach(::addEventHandlerForColumn)
+                    for (it in change.addedSubList) addEventHandlerForColumn(it)
             }
         })
 
@@ -1154,7 +1158,7 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
         val listenForRemovals = ListChangeListener<S> {
             while (it.next()) {
                 if (it.wasRemoved()) {
-                    it.removed.forEach {
+                    for (it in it.removed) {
                         items.remove(it)
                     }
                 }
@@ -1181,11 +1185,15 @@ class TableViewEditModel<S>(val tableView: TableView<S>) {
     }
 
     fun commit() {
-        items.values.forEach { it.commit() }
+        for (it in items.values) {
+            it.commit()
+        }
     }
 
     fun rollback() {
-        items.values.forEach { it.rollback() }
+        for (it in items.values) {
+            it.rollback()
+        }
     }
 
     /**
@@ -1234,7 +1242,9 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
 
     init {
         dirtyColumns.addListener(InvalidationListener {
-            invalidationListeners.forEach { it.invalidated(this) }
+            for (it in invalidationListeners) {
+                it.invalidated(this)
+            }
         })
     }
 
@@ -1267,7 +1277,7 @@ class TableColumnDirtyState<S>(val editModel: TableViewEditModel<S>, val item: S
     }
 
     fun rollback() {
-        dirtyColumns.forEach {
+        for (it in dirtyColumns) {
             it.key.setValue(item, it.value)
         }
         dirtyColumns.clear()
@@ -1291,7 +1301,7 @@ class DirtyDecoratingTableRowSkin<S>(tableRow: TableRow<S>, val editModel: Table
     override fun layoutChildren(x: Double, y: Double, w: Double, h: Double) {
         super.layoutChildren(x, y, w, h)
 
-        cells.forEach { cell ->
+        for (cell in cells) {
             val item = if (cell.index > -1 && cell.tableView.items.size > cell.index) cell.tableView.items[cell.index] else null
             val polygon = getPolygon(cell)
             val isDirty = item != null && editModel.getDirtyState(item).isDirtyColumn(cell.tableColumn)

@@ -25,12 +25,12 @@ class SqueezeBox(multiselect: Boolean = true, fillHeight: Boolean = false) : Con
         children.onChange { change ->
             while (change.next()) {
                 if (change.wasAdded()) {
-                    change.addedSubList.forEach {
+                    for (it in change.addedSubList) {
                         if (it is TitledPane) panes.add(it)
                     }
                 }
                 if (change.wasRemoved()) {
-                    change.removed.forEach {
+                    for (it in change.removed) {
                         if (it is TitledPane) panes.remove(it)
                     }
                 }
@@ -39,7 +39,9 @@ class SqueezeBox(multiselect: Boolean = true, fillHeight: Boolean = false) : Con
 
         multiselectProperty.onChange {
             if (!multiselect) {
-                panes.filter { it.isExpanded }.drop(1).forEach { it.isExpanded = false }
+                for (it in panes.filter { it.isExpanded }.drop(1)) {
+                    it.isExpanded = false
+                }
             }
         }
     }
@@ -54,7 +56,9 @@ class SqueezeBox(multiselect: Boolean = true, fillHeight: Boolean = false) : Con
 
     internal fun updateExpanded(pane: TitledPane) {
         if (!multiselect && pane.isExpanded) {
-            panes.filter { it != pane && it.isExpanded }.forEach { it.isExpanded = false }
+            for (it in panes.filter { it != pane && it.isExpanded }) {
+                it.isExpanded = false
+            }
         }
     }
 }
@@ -87,13 +91,13 @@ class SqueezeBoxSkin(val control: SqueezeBox) : BehaviorSkinBase<SqueezeBox, Squ
         if (skinnable.fillHeight) {
             var totalPrefHeight: Double = 0.0
             var expandedCount = 0
-            control.panes.forEach {
+            for (it in control.panes) {
                 if (it.isExpanded) expandedCount += 1
                 totalPrefHeight += it.prefHeight(contentWidth)
             }
             extraHeightPerExpandedPane = (contentHeight - totalPrefHeight) / expandedCount
         }
-        control.panes.forEach { pane ->
+        for (pane in control.panes) {
             val prefHeight = pane.prefHeight(contentWidth) + if (pane.isExpanded) extraHeightPerExpandedPane else 0.0
             pane.resizeRelocate(contentX, currentY, contentWidth, prefHeight)
             pane.renderCloseButton(contentWidth, currentY)

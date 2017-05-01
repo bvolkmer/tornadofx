@@ -59,7 +59,7 @@ open class ViewModel : Component(), Injectable {
         autocommitProperties.onChange {
             while (it.next()) {
                 if (it.wasAdded()) {
-                    it.addedSubList.forEach { facade ->
+                    for (facade in it.addedSubList) {
                         facade.addListener { obs, _, nv ->
                             if (validate(fields = facade)) propertyMap[obs]!!.invoke()?.value = nv
                         }

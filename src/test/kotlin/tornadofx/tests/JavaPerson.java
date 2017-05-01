@@ -13,7 +13,7 @@ public class JavaPerson {
     private String department;
     private String primaryEmail;
     private String secondaryEmail;
-    private List<JavaPerson> employees = new ArrayList<>();
+    private List<JavaPerson> employees = new ArrayList<JavaPerson>();
 
     public JavaPerson(){
         pcs = new PropertyChangeSupport(this);

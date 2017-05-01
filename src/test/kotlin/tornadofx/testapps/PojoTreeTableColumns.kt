@@ -34,7 +34,9 @@ class PojoTreeTableColumns : View("Pojo Tree Table Columns") {
 
         // Expand the two first levels
         root.isExpanded = true
-        root.children.forEach { it.isExpanded = true }
+        for (it in root.children) {
+            it.isExpanded = true
+        }
         resizeColumnsToFitContent()
     }
 }

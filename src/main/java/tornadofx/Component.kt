@@ -499,20 +499,26 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         (isDockedProperty as SimpleBooleanProperty).value = true
         enableAccelerators()
         onDock()
-        onDockListeners?.forEach { it.invoke(this) }
+        val iter = onDockListeners?.iterator()
+        if (iter != null) {
+            while (iter.hasNext()) {
+                val it = iter.next()
+                it.invoke(this)
+            }
+        }
     }
 
     private fun attachLocalEventBusListeners() {
-        subscribedEvents.forEach { event, actions ->
-            actions.forEach {
+        for ((event, actions) in subscribedEvents) {
+            for (it in actions) {
                 FX.eventbus.subscribe(event, scope, it)
             }
         }
     }
 
     private fun detachLocalEventBusListeners() {
-        subscribedEvents.forEach { event, actions ->
-            actions.forEach {
+        for ((event, actions) in subscribedEvents) {
+            for (it in actions) {
                 FX.eventbus.unsubscribe(event, it.action)
             }
         }
@@ -524,7 +530,13 @@ abstract class UIComponent(viewTitle: String? = "", icon: Node? = null) : Compon
         (isDockedProperty as SimpleBooleanProperty).value = false
         disableAccelerators()
         onUndock()
-        onUndockListeners?.forEach { it.invoke(this) }
+        val iter = onUndockListeners?.iterator()
+        if (iter != null) {
+            while (iter.hasNext()) {
+                val it = iter.next()
+                it.invoke(this)
+            }
+        }
     }
 
 

@@ -117,7 +117,9 @@ class DataGrid<T>(items: ObservableList<T>) : Control() {
         if (oldList != null) {
             oldList.removeListener(itemsChangeListener)
             // Keep cache for elements in present in the new list
-            oldList.filterNot { newList.contains(it) }.forEach { graphicCache.remove(it) }
+            for (it in oldList.filterNot { newList.contains(it) }) {
+                graphicCache.remove(it)
+            }
         } else {
             graphicCache.clear()
         }
@@ -367,7 +369,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
         // Instead of attaching listeners to all cells, distribute selected status directly
         val selectedIndicesListener = ListChangeListener<Int> { c ->
             while (c.next()) {
-                if (c.wasAdded()) c.addedSubList.forEach { index ->
+                if (c.wasAdded()) for (index in c.addedSubList) {
                     val cell = getCellAt(index)
                     if (cell != null && !cell.isSelected) {
                         cell.updating = true
@@ -376,7 +378,7 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
                         cell.updating = false
                     }
                 }
-                if (c.wasRemoved()) c.removed.forEach { index ->
+                if (c.wasRemoved()) for (index in c.removed) {
                     val cell = getCellAt(index)
                     if (cell != null && cell.isSelected) {
                         cell.updating = true
@@ -449,7 +451,9 @@ class DataGridSelectionModel<T>(val dataGrid: DataGrid<T>) : MultipleSelectionMo
 
     override fun selectIndices(index: Int, vararg indices: Int) {
         select(index)
-        indices.forEach { select(it) }
+        for (it in indices) {
+            select(it)
+        }
     }
 
     override fun isSelected(index: Int) = selectedIndicies.contains(index)

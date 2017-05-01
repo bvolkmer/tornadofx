@@ -84,7 +84,7 @@ interface SelectionHolder {
         removeSelection(oldSelection)
         val ruleSets = oldSelection.selector.rule
         if (ruleSets.size > 1) {
-            Stylesheet.log.warning ( "Selection has ${ruleSets.size} selectors, but only the first will be used" )
+            Stylesheet.log.warning("Selection has ${ruleSets.size} selectors, but only the first will be used")
         }
         val selection = CssSelection(CssSelector(toRuleSet().append(ruleSets[0], relation))) { mix(oldSelection.block) }
         addSelection(selection)
@@ -929,13 +929,13 @@ class CssSelectionBlock(op: CssSelectionBlock.() -> Unit) : PropertyHolder(), Se
 
     @Suppress("UNCHECKED_CAST")
     fun mix(mixin: CssSelectionBlock) {
-        mixin.properties.forEach { k, v ->
+        for ((k, v) in mixin.properties) {
             if (properties[k]?.first is MultiValue<*>)
                 (properties[k]?.first as MultiValue<Any>).addAll(v.first as MultiValue<Any>)
             else
                 properties[k] = v
         }
-        mixin.unsafeProperties.forEach { k, v ->
+        for ((k, v) in mixin.unsafeProperties) {
             if (unsafeProperties[k] is MultiValue<*>)
                 (unsafeProperties[k] as MultiValue<Any>).addAll(v as MultiValue<Any>)
             else
@@ -950,7 +950,9 @@ fun mixin(op: CssSelectionBlock.() -> Unit) = CssSelectionBlock(op)
 class CssRuleSet(val rootRule: CssRule, vararg val subRule: CssSubRule) : Selectable, Scoped, Rendered {
     override fun render() = buildString {
         append(rootRule.render())
-        subRule.forEach { append(it.render()) }
+        for (it in subRule) {
+            append(it.render())
+        }
     }
 
     override fun toRuleSet() = this
@@ -1020,7 +1022,12 @@ class InlineCss : PropertyHolder(), Rendered {
     }
 }
 
-fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) = forEach { it.style(append, op) }
+fun Iterable<Node>.style(append: Boolean = false, op: InlineCss.() -> Unit) {
+    for (it in this) {
+        it.style(append, op)
+    }
+}
+
 fun Node.style(append: Boolean = false, op: InlineCss.() -> Unit) {
     val block = InlineCss().apply(op)
 
@@ -1168,7 +1175,7 @@ fun Node.hasClass(cssClass: CssRule) = if (cssClass.prefix == ":") hasPseudoClas
  * Add one or more type safe css classes to this Node. Pseudo classes are also supported.
  */
 fun <T : Node> T.addClass(vararg cssClass: CssRule): T {
-    cssClass.forEach {
+    for (it in cssClass) {
         if (it.prefix == ":") addPseudoClass(it.name) else addClass(it.name)
     }
     return this
@@ -1178,7 +1185,7 @@ fun <T : Node> T.addClass(vararg cssClass: CssRule): T {
  * Remove the given given type safe css class(es) from this node. Pseudo classes are also supported.
  */
 fun <T : Node> T.removeClass(vararg cssClass: CssRule): T {
-    cssClass.forEach {
+    for (it in cssClass) {
         if (it.prefix == ":") removePseudoClass(it.name) else removeClass(it.name)
     }
     return this
@@ -1188,6 +1195,7 @@ fun <T : Node> T.removeClass(vararg cssClass: CssRule): T {
  * Toggle the given type safe css class based on the given predicate. Pseudo classes are also supported.
  */
 fun <T : Node> T.toggleClass(cssClass: CssRule, predicate: Boolean) = if (cssClass.prefix == ":") togglePseudoClass(cssClass.name, predicate) else toggleClass(cssClass.name, predicate)
+
 /**
  * Toggle the given type safe css class based on the given predicate observable value.
  * Whenever the observable value changes, the class is added or removed.
@@ -1203,17 +1211,33 @@ fun <T : Node> T.toggleClass(cssClass: CssRule, observablePredicate: ObservableV
 /**
  * Add the given type safe css classes to every Node in this Iterable. Pseudo classes are also supported.
  */
-fun Iterable<Node>.addClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.addClass(it) } }
+fun Iterable<Node>.addClass(vararg cssClass: CssRule) {
+    for (node in this) {
+        for (it in cssClass) {
+            node.addClass(it)
+        }
+    }
+}
 
 /**
  * Remove the given type safe css classes from every node in this Iterable. Pseudo classes are also supported.
  */
-fun Iterable<Node>.removeClass(vararg cssClass: CssRule) = forEach { node -> cssClass.forEach { node.removeClass(it) } }
+fun Iterable<Node>.removeClass(vararg cssClass: CssRule) {
+    for (node in this) {
+        for (it in cssClass) {
+            node.removeClass(it)
+        }
+    }
+}
 
 /**
  * Toggle the given type safe css class on every node in this iterable based on the given predicate. Pseudo classes are also supported.
  */
-fun Iterable<Node>.toggleClass(cssClass: CssRule, predicate: Boolean) = forEach { it.toggleClass(cssClass, predicate) }
+fun Iterable<Node>.toggleClass(cssClass: CssRule, predicate: Boolean) {
+    for (it in this) {
+        it.toggleClass(cssClass, predicate)
+    }
+}
 
 /**
  * Bind this observable type safe css rule to this Node. Pseudo classes are also supported.

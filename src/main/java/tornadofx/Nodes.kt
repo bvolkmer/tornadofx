@@ -51,11 +51,15 @@ fun <S, T> TableColumnBase<S, T>.hasClass(className: String) = styleClass.contai
 fun <S, T> TableColumnBase<S, T>.hasClass(className: CssRule) = hasClass(className.name)
 fun <S, T> TableColumnBase<S, T>.addClass(className: String): TableColumnBase<S, T> = apply { styleClass.add(className) }
 fun <S, T> TableColumnBase<S, T>.addClass(vararg cssClass: CssRule): TableColumnBase<S, T> = apply {
-    cssClass.forEach { styleClass.add(it.name) }
+    for (it in cssClass) {
+        styleClass.add(it.name)
+    }
 }
 
 fun <S, T> TableColumnBase<S, T>.removeClass(vararg cssClass: CssRule): TableColumnBase<S, T> = apply {
-    cssClass.forEach { styleClass.remove(it.name) }
+    for (it in cssClass) {
+        styleClass.remove(it.name)
+    }
 }
 
 fun <S, T> TableColumnBase<S, T>.removeClass(className: String): TableColumnBase<S, T> = apply { styleClass.remove(className) }
@@ -134,7 +138,9 @@ fun Scene.reloadStylesheets() {
                 val query = urlAndQuery[1]
 
                 val pairs = query.split("&")
-                pairs.filterNot { it.startsWith("squash=") }.forEach { queryPairs.add(it) }
+                for (it in pairs.filterNot { it.startsWith("squash=") }) {
+                    queryPairs.add(it)
+                }
             } else {
                 b.append(s)
             }
@@ -149,7 +155,7 @@ fun Scene.reloadStylesheets() {
 
 internal fun Scene.reloadViews(scope: Scope = DefaultScope) {
     if (properties["tornadofx.layoutdebugger"] == null) {
-        findUIComponents().forEach {
+        for (it in findUIComponents()) {
             if (it.reloadInit) FX.replaceComponent(it, scope)
             it.reloadInit = true
         }
@@ -175,9 +181,13 @@ private fun Parent.findUIComponents(list: MutableList<UIComponent>) {
     val uicmp = uiComponent<UIComponent>()
     if (uicmp is UIComponent) {
         list += uicmp
-        childrenUnmodifiable.asSequence().filterIsInstance<Parent>().forEach { it.clearViews() }
+        for (it in childrenUnmodifiable.asSequence().filterIsInstance<Parent>()) {
+            it.clearViews()
+        }
     } else {
-        childrenUnmodifiable.asSequence().filterIsInstance<Parent>().forEach { it.findUIComponents(list) }
+        for (it in childrenUnmodifiable.asSequence().filterIsInstance<Parent>()) {
+            it.findUIComponents(list)
+        }
     }
 }
 
@@ -294,7 +304,9 @@ fun TableView<out Any>.resizeColumnsToFitContent(resizeColumns: List<TableColumn
         try {
             val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TableColumn::class.java, Int::class.java)
             resizer.isAccessible = true
-            resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+            for (it in resizeColumns) {
+                resizer.invoke(skin, it, maxRows)
+            }
             afterResize?.invoke()
         } catch (ex: Exception) {
             // Silent for now, it is usually run multiple times
@@ -308,7 +320,9 @@ fun <T> TreeTableView<T>.resizeColumnsToFitContent(resizeColumns: List<TreeTable
     val doResize = {
         val resizer = skin.javaClass.getDeclaredMethod("resizeColumnToFitContent", TreeTableColumn::class.java, Int::class.java)
         resizer.isAccessible = true
-        resizeColumns.forEach { resizer.invoke(skin, it, maxRows) }
+        for (it in resizeColumns) {
+            resizer.invoke(skin, it, maxRows)
+        }
         afterResize?.invoke()
     }
     if (skin == null) Platform.runLater { doResize() } else doResize()
@@ -871,7 +885,9 @@ fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFa
                 item.children.subList(change.from, change.to).clear()
                 val permutated = change.list.subList(change.from, change.to).map { itemFactory.invoke(it) }
                 item.children.addAll(change.from, permutated)
-                permutated.forEach { populateTree(it, itemFactory, childFactory) }
+                for (it in permutated) {
+                    populateTree(it, itemFactory, childFactory)
+                }
             } else {
                 if (change.wasRemoved()) {
                     val removed = change.removed.flatMap { removed -> item.children.filter { it.value == removed } }
@@ -880,7 +896,9 @@ fun <T> populateTree(item: TreeItem<T>, itemFactory: (T) -> TreeItem<T>, childFa
                 if (change.wasAdded()) {
                     val added = change.addedSubList.map { itemFactory.invoke(it) }
                     item.children.addAll(change.from, added)
-                    added.forEach { populateTree(it, itemFactory, childFactory) }
+                    for (it in added) {
+                        populateTree(it, itemFactory, childFactory)
+                    }
                 }
             }
         }

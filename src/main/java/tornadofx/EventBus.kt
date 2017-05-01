@@ -75,15 +75,18 @@ class EventBus {
 
     fun fire(event: FXEvent) {
         fun fireEvents() {
-            subscriptions[event.javaClass.kotlin]?.forEach {
-                if (event.scope == null || event.scope == eventScopes[it.action]) {
-                    val count = it.count.andIncrement
-                    if (it.maxCount == null || count < it.maxCount) {
-                        val context = EventContext()
-                        it.action.invoke(context, event)
-                        if (context.unsubscribe) unsubscribe(it)
-                    } else {
-                        unsubscribe(it)
+            val subs = subscriptions[event.javaClass.kotlin]
+            if (subs != null) {
+                for (it in subs) {
+                    if (event.scope == null || event.scope == eventScopes[it.action]) {
+                        val count = it.count.andIncrement
+                        if (it.maxCount == null || count < it.maxCount) {
+                            val context = EventContext()
+                            it.action.invoke(context, event)
+                            if (context.unsubscribe) unsubscribe(it)
+                        } else {
+                            unsubscribe(it)
+                        }
                     }
                 }
             }

@@ -106,13 +106,13 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
         items.onChange { change ->
             while (change.next()) {
                 if (change.wasAdded()) {
-                    change.addedSubList.forEach {
+                    for (it in change.addedSubList) {
                         configureRotation(it.button)
                         buttonArea.add(Group(it.button))
                     }
                 }
                 if (change.wasRemoved()) {
-                    change.removed.forEach {
+                    for (it in change.removed) {
                         val group = it.button.parent
                         it.button.removeFromParent()
                         group.removeFromParent()
@@ -126,7 +126,7 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
     private fun enforceMultiSelect() {
         multiselectProperty.onChange {
             if (!multiselect) {
-                contentArea.children.toTypedArray().drop(1).forEach {
+                for (it in contentArea.children.toTypedArray().drop(1)) {
                     (it as DrawerItem).button.isSelected = false
                 }
             }
@@ -185,7 +185,7 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
             }
         }
 
-        buttonArea.items.forEach {
+        for (it in buttonArea.items) {
             val button = (it as Group).children.first() as ToggleButton
             configureRotation(button)
         }
@@ -195,7 +195,7 @@ class Drawer(side: Side, multiselect: Boolean, floatingContent: Boolean) : Borde
         if (item.expanded) {
             if (!contentArea.children.contains(item)) {
                 if (!multiselect) {
-                    contentArea.children.toTypedArray().forEach {
+                    for (it in contentArea.children.toTypedArray()) {
                         (it as DrawerItem).button.isSelected = false
                     }
                 }
@@ -278,12 +278,12 @@ class ExpandedDrawerContentArea : VBox() {
         children.onChange { change ->
             while (change.next()) {
                 if (change.wasAdded()) {
-                    change.addedSubList.forEach {
+                    for (it in change.addedSubList) {
                         if (VBox.getVgrow(it) == null) {
                             VBox.setVgrow(it, Priority.ALWAYS)
                         }
-                     //   if (it is VBox) {
-                       //     it.alignment = Pos.TOP_CENTER
+                        //   if (it is VBox) {
+                        //     it.alignment = Pos.TOP_CENTER
                         //}
                     }
                 }
@@ -315,7 +315,7 @@ class DrawerItem(val drawer: Drawer, title: ObservableValue<String?>? = null, ic
         children.onChange { change ->
             while (change.next()) {
                 if (change.wasAdded()) {
-                    change.addedSubList.forEach {
+                    for (it in change.addedSubList) {
                         if (VBox.getVgrow(it) == null) {
                             VBox.setVgrow(it, Priority.ALWAYS)
                         }

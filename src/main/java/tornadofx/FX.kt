@@ -74,7 +74,9 @@ open class Scope() {
 
     // Fix the component types to this scope
     operator fun invoke(vararg injectable: KClass<out Component>) {
-        injectable.forEach { FX.fixedScopes[it] = this }
+        for (it in injectable) {
+            FX.fixedScopes[it] = this
+        }
     }
 }
 
@@ -162,7 +164,7 @@ class FX {
             try {
                 messages = ResourceBundle.getBundle("Messages", locale, FXResourceBundleControl.INSTANCE)
             } catch (ex: Exception) {
-                log.fine( "No global Messages found in locale $locale, using empty bundle" )
+                log.fine("No global Messages found in locale $locale, using empty bundle")
                 messages = EmptyResourceBundle.INSTANCE
             }
         }
@@ -236,6 +238,7 @@ class FX {
 
         @JvmStatic
         fun <T : Component> find(componentType: Class<T>, scope: Scope): T = find(componentType.kotlin, scope)
+
         @JvmStatic
         fun <T : Component> find(componentType: Class<T>): T = find(componentType.kotlin, DefaultScope)
 
@@ -280,8 +283,12 @@ class FX {
             scene.stylesheets.addAll(stylesheets)
             stylesheets.addListener(ListChangeListener {
                 while (it.next()) {
-                    if (it.wasAdded()) it.addedSubList.forEach { scene.stylesheets.add(it) }
-                    if (it.wasRemoved()) it.removed.forEach { scene.stylesheets.remove(it) }
+                    if (it.wasAdded()) for (it in it.addedSubList) {
+                        scene.stylesheets.add(it)
+                    }
+                    if (it.wasRemoved()) for (it in it.removed) {
+                        scene.stylesheets.remove(it)
+                    }
                 }
             })
         }
@@ -350,7 +357,9 @@ fun <T : Injectable> Scope.set(vararg value: T): Scope {
 
 fun varargParamsToMap(params: Array<out Pair<String, Any?>>): Map<*, Any?>? {
     val m = HashMap<String, Any?>()
-    params.forEach { m.put(it.first, it.second) }
+    for (it in params) {
+        m.put(it.first, it.second)
+    }
     return m
 }
 
@@ -364,9 +373,11 @@ fun <T : Component> find(type: KClass<T>, scope: Scope = DefaultScope, params: M
     }
     inheritScopeHolder.set(useScope)
     val stringKeyedMap = HashMap<String, Any?>()
-    params?.forEach {
-        val stringKey = (it.key as? KProperty<*>)?.name ?: it.key.toString()
-        stringKeyedMap[stringKey] = params[it.key]
+    if (params != null) {
+        for (it in params) {
+            val stringKey = (it.key as? KProperty<*>)?.name ?: it.key.toString()
+            stringKeyedMap[stringKey] = params[it.key]
+        }
     }
     inheritParamHolder.set(stringKeyedMap)
     if (Injectable::class.java.isAssignableFrom(type.java)) {

@@ -121,13 +121,17 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
         children.addListener(ListChangeListener { c ->
             while (c.next()) {
                 if (c.wasAdded()) {
-                    c.addedSubList.asSequence().filterIsInstance<Field>().forEach { added ->
-
+                    for (added in c.addedSubList.asSequence().filterIsInstance<Field>()) {
                         // Configure hgrow for current children
-                        added.inputContainer.children.forEach { configureHgrow(it) }
+                        for (it in added.inputContainer.children) {
+                            configureHgrow(it)
+                        }
 
                         // Add listener to support inputs added later
-                        added.inputContainer.children.addListener(ListChangeListener { while (it.next()) if (it.wasAdded()) it.addedSubList.forEach { configureHgrow(it) } })
+                        added.inputContainer.children.addListener(ListChangeListener { while (it.next()) if (it.wasAdded()) for (it in it.addedSubList) {
+                            configureHgrow(it)
+                        }
+                        })
                     }
                 }
             }
@@ -135,8 +139,10 @@ class Fieldset(text: String? = null, labelPosition: Orientation = HORIZONTAL) : 
 
         // Change HGrow for unconfigured children when inputGrow changes
         inputGrowProperty().onChange {
-            children.asSequence().filterIsInstance<Field>().forEach { field ->
-                field.inputContainer.children.forEach { configureHgrow(it) }
+            for (field in children.asSequence().filterIsInstance<Field>()) {
+                for (it in field.inputContainer.children) {
+                    configureHgrow(it)
+                }
             }
         }
     }

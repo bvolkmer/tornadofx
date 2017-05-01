@@ -69,7 +69,9 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
 
     init {
         Stylesheet.importServiceLoadedStylesheets()
-        stylesheet.forEach { importStylesheet(it) }
+        for (it in stylesheet) {
+            importStylesheet(it)
+        }
     }
 
     override fun start(stage: Stage) {
@@ -103,7 +105,7 @@ open class App(primaryView: KClass<out UIComponent>? = null, vararg stylesheet: 
 
     override fun stop() {
         scope.deregister()
-        trayIcons.forEach {
+        for (it in trayIcons) {
             SwingUtilities.invokeLater { SystemTray.getSystemTray().remove(it) }
         }
     }

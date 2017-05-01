@@ -87,7 +87,9 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         val DefaultViewStackDepth = 10
 
         fun closeAll() {
-            activeWorkspaces.forEach(Workspace::close)
+            for (it in activeWorkspaces) {
+                it.close()
+            }
         }
 
         var defaultSavable = true
@@ -207,7 +209,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
         tabContainer.tabs.onChange { change ->
             while (change.next()) {
                 if (change.wasRemoved()) {
-                    change.removed.forEach {
+                    for (it in change.removed) {
                         if (it == dockedComponent) {
                             titleProperty.unbind()
                             refreshButton.disableProperty().unbind()
@@ -217,7 +219,7 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
                     }
                 }
                 if (change.wasAdded()) {
-                    change.addedSubList.forEach {
+                    for (it in change.addedSubList) {
                         it.content.properties["tornadofx.tab"] = it
                     }
                 }
@@ -338,7 +340,9 @@ open class Workspace(title: String = "Workspace", navigationMode: NavigationMode
     }
 
     private fun clearDynamicComponents() {
-        root.dynamicComponents.forEach(Node::removeFromParent)
+        for (it in root.dynamicComponents) {
+            it.removeFromParent()
+        }
         root.dynamicComponents.clear()
     }
 

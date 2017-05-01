@@ -113,7 +113,7 @@ fun JsonObject.double(key: String) = if (isNotNullOrNULL(key)) getDouble(key) el
 fun JsonObject.getDouble(key: String): Double = getJsonNumber(key).doubleValue()
 
 fun JsonObject.bigdecimal(key: String) = if (isNotNullOrNULL(key)) getBigDecimal(key) else null
-fun JsonObject.getBigDecimal(key: String) : BigDecimal = getJsonNumber(key).bigDecimalValue()
+fun JsonObject.getBigDecimal(key: String): BigDecimal = getJsonNumber(key).bigDecimalValue()
 
 fun JsonObject.long(key: String) = if (isNotNullOrNULL(key)) getLong(key) else null
 fun JsonObject.getLong(key: String) = getJsonNumber(key).longValue()
@@ -122,9 +122,9 @@ fun JsonObject.bool(key: String): Boolean? = if (isNotNullOrNULL(key)) getBoolea
 fun JsonObject.boolean(key: String) = bool(key) // Alias
 
 fun JsonObject.date(key: String) = if (isNotNullOrNULL(key)) getDate(key) else null
-fun JsonObject.getDate(key: String) : LocalDate = LocalDate.parse(getString(key))
+fun JsonObject.getDate(key: String): LocalDate = LocalDate.parse(getString(key))
 
-fun JsonNumber.datetime(millis: Boolean = JsonConfig.DefaultDateTimeMillis) = LocalDateTime.ofEpochSecond(longValue()/(if (millis) 1000 else 1), 0, ZoneOffset.UTC)
+fun JsonNumber.datetime(millis: Boolean = JsonConfig.DefaultDateTimeMillis) = LocalDateTime.ofEpochSecond(longValue() / (if (millis) 1000 else 1), 0, ZoneOffset.UTC)
 fun JsonObject.getDateTime(key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis): LocalDateTime = getJsonNumber(key).datetime(millis)
 fun JsonObject.datetime(key: String, millis: Boolean = JsonConfig.DefaultDateTimeMillis) = if (isNotNullOrNULL(key)) getDateTime(key, millis) else null
 
@@ -134,7 +134,7 @@ fun JsonObject.getUUID(key: String) = UUID.fromString(getString(key))
 fun JsonObject.int(key: String) = if (isNotNullOrNULL(key)) getInt(key) else null
 
 fun JsonObject.jsonObject(key: String) = if (isNotNullOrNULL(key)) getJsonObject(key) else null
-inline fun <reified T : JsonModel> JsonObject.jsonModel(key: String) = if (isNotNullOrNULL(key)) T::class.java.newInstance().apply { updateModel(getJsonObject(key)) }  else null
+inline fun <reified T : JsonModel> JsonObject.jsonModel(key: String) = if (isNotNullOrNULL(key)) T::class.java.newInstance().apply { updateModel(getJsonObject(key)) } else null
 
 fun JsonObject.jsonArray(key: String) = if (isNotNullOrNULL(key)) getJsonArray(key) else null
 
@@ -286,7 +286,7 @@ private fun <T> KProperty<T>.generic(): Class<*> =
 interface JsonModelAuto : JsonModel {
     override fun updateModel(json: JsonObject) {
         val props = this.javaClass.kotlin.memberProperties
-        props.forEach {
+        for (it in props) {
             val pr = it.get(this)
             when (pr) {
                 is BooleanProperty -> pr.value = json.bool(it.name)
@@ -316,7 +316,7 @@ interface JsonModelAuto : JsonModel {
     override fun toJSON(json: JsonBuilder) {
         with(json) {
             val props = this@JsonModelAuto.javaClass.kotlin.memberProperties//.filter { it.isAccessible }
-            props.forEach {
+            for (it in props) {
                 val pr = it.get(this@JsonModelAuto)
                 when (pr) {
                     is BooleanProperty -> add(it.name, pr.value)
@@ -338,7 +338,9 @@ interface JsonModelAuto : JsonModel {
                     is ObservableList<*> -> {
                         val Array = pr as ObservableList<JsonModel>
                         val jsonArray = Json.createArrayBuilder()
-                        Array.forEach { jsonArray.add(it.toJSON()) }
+                        for (it in Array) {
+                            jsonArray.add(it.toJSON())
+                        }
                         add(it.name, jsonArray.build())
                     }
                 }
@@ -353,7 +355,11 @@ fun JsonStructure.toPrettyString(): String {
 
 fun JsonStructure.toString(vararg options: String): String {
     val stringWriter = StringWriter()
-    val config = HashMap<String, Boolean>().apply { options.forEach { put(it, true) } }
+    val config = HashMap<String, Boolean>().apply {
+        for (it in options) {
+            put(it, true)
+        }
+    }
     val writerFactory = Json.createWriterFactory(config)
     val jsonWriter = writerFactory.createWriter(stringWriter)
     jsonWriter.write(this)
@@ -361,13 +367,15 @@ fun JsonStructure.toString(vararg options: String): String {
     return stringWriter.toString()
 }
 
-fun <T : JsonModel> Iterable<T>.toJSON() = Json.createArrayBuilder().apply { forEach { add(it.toJSON()) } }.build()
+fun <T : JsonModel> Iterable<T>.toJSON() = Json.createArrayBuilder().apply {
+    for (it in this@toJSON) { add(it.toJSON()) }
+}.build()
 
 fun InputStream.toJSONArray(): JsonArray = Json.createReader(this).use { it.readArray() }
 fun InputStream.toJSON(): JsonObject = Json.createReader(this).use { it.readObject() }
 
 fun JsonObject?.contains(text: String?, ignoreCase: Boolean = true) =
-    if (this == null || text == null) false else toString().toLowerCase().contains(text, ignoreCase)
+        if (this == null || text == null) false else toString().toLowerCase().contains(text, ignoreCase)
 
 fun JsonModel?.contains(text: String?, ignoreCase: Boolean = true) = this?.toJSON()?.contains(text, ignoreCase) ?: false
 

@@ -203,7 +203,9 @@ abstract class Wizard @JvmOverloads constructor(title: String? = null, heading: 
 
     override fun onDock() {
         complete.onChange {
-            if (it) completeListeners.forEach { it() }
+            if (it) for (it in completeListeners) {
+                it()
+            }
         }
     }
 }

@@ -28,7 +28,11 @@ fun PieChart.data(name: String, value: Double, op: (PieChart.Data.() -> Unit)? =
 /**
  * Add and create multiple PieChart.Data entries from the given map.
  */
-fun PieChart.data(value: Map<String, Double>) = value.forEach { data(it.key, it.value) }
+fun PieChart.data(value: Map<String, Double>) {
+    for (it in value) {
+        data(it.key, it.value)
+    }
+}
 
 
 /**
